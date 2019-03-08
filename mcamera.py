@@ -17,6 +17,8 @@ from imutils.video import VideoStream
 import time
 import os
 import cv2
+import sys
+import argparse
 
  
 ####################################################################################
@@ -44,7 +46,7 @@ def get_save_file(filetype):
 
 #####################################################################################
 
-def process(frame, fgbg, kernel, debug, ttrack):
+def process(frame, fgbg, kernel, debug, ttrack, angle):
 	"""
 	Process frame to determine objects that are moving in the frame
 	
@@ -62,7 +64,7 @@ def process(frame, fgbg, kernel, debug, ttrack):
 	"""
 	# Rotate the image
 	image = frame
-	image = imutils.rotate(image, angle = 180)
+	image = imutils.rotate(image, angle = angle)
 		
 	# Apply background subtraction and clean up noise
 	fgmask = fgbg.apply(image)
@@ -71,7 +73,7 @@ def process(frame, fgbg, kernel, debug, ttrack):
 	ret, fgmask = cv2.threshold(fgmask,200,255,cv2.THRESH_BINARY)
 		
 	# Find the contours from the fgmask binary image
-	img, contours, hierarchy = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+	contours, hierarchy = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 	
 	# Eliminate contours that are too small that likely come from noise and various
 	# scene shifts. Also apply rectangles to the original image around contours if debug
@@ -100,7 +102,7 @@ def process(frame, fgbg, kernel, debug, ttrack):
 
 ######################################################################################
 
-def capture(debug=False):
+def capture(usePiCamera=False, angle=0, debug=False):
 	"""
 	Capture, display, and save live stream from pi camera
 
@@ -115,7 +117,6 @@ def capture(debug=False):
 	
 	# defines a frame buffer, and opencv video writer for saving video
 	frame_buf = []
-	frames = []
 	fourcc = cv2.VideoWriter_fourcc(*'XVID')
 	
 	# variable for time counting
@@ -133,111 +134,135 @@ def capture(debug=False):
 	kernel = np.ones((5,5),np.uint8)
 
 	# initialize camera
-	vs = VideoStream(src=0, usePiCamera=True, resolution=(640,480),
+	vs = VideoStream(src=0, usePiCamera=usePiCamera, resolution=(640,480),
 		framerate=8).start() 	
 	time.sleep(2.0)
 	
-	# capture frames from the camera
-	while True:
-		frame = vs.read()
-        # process frame
-		image, fgmask, ismotion = process(frame, fgbg, kernel, debug, ttrack)
-		dimage = image.copy() #display image for live feed
-
-		# when recording is enabled, frames are written to the .h264 file
-		# when motion is detected and a recording indicator is put to the live feed
-		if isrecord:
-			if ismotion:
-				if len(frame_buf) > 0:
-					for frame in frame_buf:
-						out.write(frame)
-					frame_buf = []
-				out.write(image)
-					
-			else:
-				if len(frame_buf) < 8:
-					frame_buf.append(image.copy())
+	# if program crashes except statement kills all processes
+	try:
+		# capture frames from the camera
+		while True:
+			frame = vs.read()
+		# process frame
+			image, fgmask, ismotion = process(frame, fgbg, kernel, debug, ttrack, angle)
+			dimage = image.copy() #display image for live feed
+	
+			# when recording is enabled, frames are written to the .h264 file
+			# when motion is detected and a recording indicator is put to the live feed
+			if isrecord:
+				if ismotion:
+					if len(frame_buf) > 0:
+						for frame in frame_buf:
+							out.write(frame)
+						frame_buf = []
+					out.write(image)
+						
 				else:
-					frame_buf.append(image.copy())
-					del frame_buf[0]
-			font = cv2.FONT_HERSHEY_SIMPLEX
-			cv2.putText(dimage, 'Recording',(10, 25), font, 1,(0,0,255),2,cv2.LINE_AA)
-	 
-		
-		# records time stamp and durations of detected motion
-		if ttrack:
-			if ismotion and ismotion!=wasmotion:
-				t0 = time.perf_counter()
-				date = time.strftime("%m-%d-%Y")
-				ctime = time.strftime("%H:%M:%S")
+					if len(frame_buf) < 8:
+						frame_buf.append(image.copy())
+					else:
+						frame_buf.append(image.copy())
+						del frame_buf[0]
+				font = cv2.FONT_HERSHEY_SIMPLEX
+				cv2.putText(dimage, 'Recording',(10, 25), font, 1,(0,0,255),2,cv2.LINE_AA)
+		 
 			
-			if not ismotion and ismotion!=wasmotion:
-				dt = time.perf_counter() - t0
-				outline = date + " " + ctime + ", " + "%.10f\n"%dt
-				textfile.write(outline)
+			# records time stamp and durations of detected motion
+			if ttrack:
+				if ismotion and ismotion!=wasmotion:
+					t0 = time.perf_counter()
+					date = time.strftime("%m-%d-%Y")
+					ctime = time.strftime("%H:%M:%S")
 				
-
-		# show the frame
-		# if debug = True also show bounding rectangles and fgmask
-		# and debugging indicator is applied
-		if debug:
-			cv2.imshow("Mask", fgmask)
-			font = cv2.FONT_HERSHEY_SIMPLEX
-			cv2.putText(dimage, 'Debugging',(450, 25), font, 1,(255,255,255),2,cv2.LINE_AA)
-		
-		cv2.imshow("Live Feed", dimage)
-		key = cv2.waitKey(1) & 0xFF
- 
-		
- 
-		# if the `q` key was pressed, break from the loop
-		if key == ord("q"):
-			if ttrack and ismotion:
-				dt = time.perf_counter() - t0
-				outline = time.strftime("%m-%d-%Y") + " " + time.strftime("%H:%M:%S") + ", " + "%.10f\n"%dt
-				textfile.write(outline) 
-			break
-		
-		# if the 'r' key is pressed, recording is stopped or started
-		elif key == ord("r"):
-			if not isrecord:
-				#get the filename that the next recorded video will save to
-				filename = get_save_file('.avi')
-				out = cv2.VideoWriter(filename,fourcc, 8.0, (640,480))
-			else:
-				#release the previous output file
-				out.release()
-			isrecord = not isrecord
-		
-		# if the 't' key is pressed time tracking is enabled
-		elif key == ord("t"):
-			if not ttrack:
-				filename = get_save_file('.txt')
-				textfile = open(filename, 'w')
-			else:
-				textfile.close()
-			ttrack = not ttrack
-				
-
-		# if the 'd' key is pressed, debugging is toggled on and off
-		elif key == ord("d"):
+				if not ismotion and ismotion!=wasmotion:
+					dt = time.perf_counter() - t0
+					outline = date + " " + ctime + ", " + "%.10f\n"%dt
+					textfile.write(outline)
+					
+	
+			# show the frame
+			# if debug = True also show bounding rectangles and fgmask
+			# and debugging indicator is applied
 			if debug:
-				cv2.destroyWindow('Mask')
-			debug = not debug
+				cv2.imshow("Mask", fgmask)
+				font = cv2.FONT_HERSHEY_SIMPLEX
+				cv2.putText(dimage, 'Debugging',(450, 25), font, 1,(255,255,255),2,cv2.LINE_AA)
+			
+			cv2.imshow("Live Feed", dimage)
+			key = cv2.waitKey(1) & 0xFF
+	 
+			
+	 
+			# if the `q` key was pressed, break from the loop
+			if key == ord("q"):
+				if ttrack and ismotion:
+					dt = time.perf_counter() - t0
+					outline = time.strftime("%m-%d-%Y") + " " + time.strftime("%H:%M:%S") + ", " + "%.10f\n"%dt
+					textfile.write(outline) 
+				break
+			
+			# if the 'r' key is pressed, recording is stopped or started
+			elif key == ord("r"):
+				if not isrecord:
+					#get the filename that the next recorded video will save to
+					filename = get_save_file('.avi')
+					out = cv2.VideoWriter(filename,fourcc, 8.0, (640,480))
+				else:
+					#release the previous output file
+					out.release()
+				isrecord = not isrecord
+			
+			# if the 't' key is pressed time tracking is enabled
+			elif key == ord("t"):
+				if not ttrack:
+					filename = get_save_file('.txt')
+					textfile = open(filename, 'w')
+				else:
+					textfile.close()
+				ttrack = not ttrack
+					
+	
+			# if the 'd' key is pressed, debugging is toggled on and off
+			elif key == ord("d"):
+				if debug:
+					cv2.destroyWindow('Mask')
+				debug = not debug
+			
+			wasmotion = ismotion
 		
-		wasmotion = ismotion
-		
-	cv2.destroyAllWindows()
-	try:
-		out.release()
+		vs.stream.release()	
+		cv2.destroyAllWindows()
+		try:
+			out.release()
+		except:
+			pass
+		try:
+			textfile.close()
+		except:
+			pass
 	except:
-		pass
-	try:
-		textfile.close()
-	except:
-		pass
+		vs.stream.release()	
+		cv2.destroyAllWindows()
+		try:
+			out.release()
+		except:
+			pass
+		try:
+			textfile.close()
+		except:
+			pass		
+		sys.exit()
 	
 ##########################################################################################
 
 if __name__ == "__main__":
-	capture()
+	
+	parser = argparse.ArgumentParser(description='Motion detecting software using built-in webcam. Can record motion in both text and video format.')
+	
+	parser.add_argument('-p', dest='usePiCamera', action='store_const', const=True, default=False, help='Enable this option if using the Pi camera module on a Raspberry Pi (default: False)')
+	parser.add_argument('-a', dest='angle', type=float, nargs=1, default=0, help='angle to rotate the video feed in degrees(default: 0 degrees)')
+	
+	args = parser.parse_args()
+	
+	capture(usePiCamera=args.usePiCamera,angle=args.angle[0])
+	
