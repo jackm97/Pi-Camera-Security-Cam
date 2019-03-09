@@ -102,7 +102,7 @@ def process(frame, fgbg, kernel, debug, ttrack, angle):
 
 ######################################################################################
 
-def capture(usePiCamera=False, angle=0, debug=False):
+def capture(usePiCamera=False, angle=0, resolution=[640,480], debug=False):
 	"""
 	Capture, display, and save live stream from pi camera
 
@@ -134,7 +134,7 @@ def capture(usePiCamera=False, angle=0, debug=False):
 	kernel = np.ones((5,5),np.uint8)
 
 	# initialize camera
-	vs = VideoStream(src=0, usePiCamera=usePiCamera, resolution=(640,480),
+	vs = VideoStream(src=0, usePiCamera=usePiCamera, resolution=(resolution[0],resolution[1]),
 		framerate=8).start() 	
 	time.sleep(2.0)
 	
@@ -260,9 +260,10 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='Motion detecting software using built-in webcam. Can record motion in both text and video format.')
 	
 	parser.add_argument('-p', dest='usePiCamera', action='store_const', const=True, default=False, help='Enable this option if using the Pi camera module on a Raspberry Pi (default: False)')
-	parser.add_argument('-a', dest='angle', type=float, nargs=1, default=0, help='angle to rotate the video feed in degrees(default: 0 degrees)')
+	parser.add_argument('-a', dest='angle', type=float, nargs=1, default=[0], help='angle to rotate the video feed in degrees (default: 0 degrees)')
+	parser.add_argument('-r', dest='resolution', type=int, nargs=2, default=[640,480], help='set the resolution of the video feed (default: 640x480)')
 	
 	args = parser.parse_args()
 	
-	capture(usePiCamera=args.usePiCamera,angle=args.angle[0])
+	capture(usePiCamera=args.usePiCamera,angle=args.angle[0],resolution=args.resolution)
 	
