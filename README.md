@@ -12,7 +12,7 @@ This software integrates motion detection with the built in webcam utilizing Ope
   - numpy
 
 # Usage
-## Starting the Program
+### Starting the Program
 ```
 usage: mcamera.py [-h] [-p] [-a ANGLE] [-r RESOLUTION RESOLUTION]
 
@@ -29,19 +29,43 @@ optional arguments:
                         set the resolution of the video feed (default:
                         640x480)
 ```
-## While Running
+### While Running
 If started successfully a window like the one below will appear displaying a live feed from the webcame or Pi Camera Module
 
 ![Start Image](/images/uponStart.PNG)
 
-### Key Presses
-- <d>: Debugging mode that shows the foreground mask in a separate window and bounding boxes around objects in the scene that are considered to be moving 
+#### Key Presses
+- <kbd>D</kbd>: Debugging mode that shows the foreground mask in a separate window and bounding boxes around objects in the scene that are considered to be moving 
 
 ![Debugging Mode](/images/debug.PNG) 
 
 ![Debug Mask](/images/debugMask.PNG)
 
-- <r>: Records and saves frames of the video feed where motion is detected. Frames where no motion is detected are not written to the out file. ***NOTE*** If debugging is enabled while recording, bounding boxes are included in the video file written to the disk
+- <kbd>R</kbd>: Records and saves frames of the video feed where motion is detected. Frames where no motion is detected are not written to the out file. ***NOTE*** If debugging is enabled while recording, bounding boxes are included in the video file written to the disk
+
 ![Recording Mode](/images/recording.PNG)
 
-- <t>: Records the time, date and duration of detected motion and saves it to a text file
+- <kbd>T</kbd>: Records the time, date and duration of detected motion and saves it to a text file
+
+![Time Stamp Mode](/images/timeStamp.PNG)
+
+  - Example text file output:
+```
+03-06-2019 21:17:55, 12.1759668140
+03-06-2019 21:18:23, 20.7341338090
+03-06-2019 21:18:44, 0.1353031140
+03-06-2019 21:18:44, 3.0324101540
+03-06-2019 21:19:03, 2.5508180800
+03-06-2019 21:19:15, 8.5434325880
+03-06-2019 21:19:41, 8.9811465130
+03-06-2019 21:20:13, 7.1042960370
+03-06-2019 21:20:28, 13.4253821270
+03-06-2019 21:20:45, 0.1480323770
+03-06-2019 21:21:08, 6.7135494260
+```
+- <kbd>Q</kbd>: Quits the program
+
+#Author
+Jack Myers
+
+
