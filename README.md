@@ -31,10 +31,10 @@ optional arguments:
 ```
 ## While Running
 If started successfully a window like the one below will appear displaying a live feed from the webcame or Pi Camera Module
-![Start Image](/images/uponStart.png)
+![Start Image](https://github.com/jackm97/Pi-Camera-Security-Cam/tree/master/images/uponStart.png)
 ### Key Presses
 - <d>: Debugging mode that shows the foreground mask in a separate window and bounding boxes around objects in the scene that are considered to be moving 
-![Debugging Mode](/images/debug.png) ![Debug Mask](/images/debugMask.png)
+![Debugging Mode](https://github.com/jackm97/Pi-Camera-Security-Cam/tree/master/images/debug.png) ![Debug Mask](https://github.com/jackm97/Pi-Camera-Security-Cam/tree/master/images/debugMask.png)
 - <r>: Records and saves frames of the video feed where motion is detected. Frames where no motion is detected are not written to the out file. ***NOTE*** If debugging is enabled while recording, bounding boxes are included in the video file written to the disk
-![Recording Mode](/images/recording.png)
+![Recording Mode](https://github.com/jackm97/Pi-Camera-Security-Cam/tree/master/images/recording.png)
 - <t>: Records the time, date and duration of detected motion and saves it to a text file
