@@ -65,7 +65,7 @@ If started successfully a window like the one below will appear displaying a liv
 ```
 - <kbd>Q</kbd>: Quits the program
 
-#Author
+# Author
 Jack Myers
 
 
