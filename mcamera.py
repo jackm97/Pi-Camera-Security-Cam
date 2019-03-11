@@ -193,8 +193,8 @@ def capture(usePiCamera=False, angle=0, resolution=[640,480], debug=False):
 	 
 			
 	 
-			# if the `q` key was pressed, break from the loop
-			if key == ord("q"):
+			# if the `q` key was pressed or the window is closed, break from the loop
+			if key == ord("q") or cv2.getWindowProperty("Live Feed",0)<0:
 				if ttrack and ismotion:
 					dt = time.perf_counter() - t0
 					outline = time.strftime("%m-%d-%Y") + " " + time.strftime("%H:%M:%S") + ", " + "%.10f\n"%dt
