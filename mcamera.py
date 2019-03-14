@@ -1,16 +1,6 @@
 #!/usr/bin/env python3
-#
-# record.py - motion tracking software for Raspberry Pi Camera (Raspbian Stretch)
-#
-# 25May18 Jack Myers
-# 6June18 Added time tracking
-#
-
-
 
 # import the necessary packages
-#from picamera.array import PiRGBArray
-#from picamera import PiCamera
 import numpy as np
 import imutils
 from imutils.video import VideoStream
