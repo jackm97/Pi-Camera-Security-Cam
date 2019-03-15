@@ -1,5 +1,5 @@
 # Motion Detection Camera Software
-This software integrates motion detection with the built in webcam utilizing OpenCV 4.0 for Python. So far, the software has been tested on the HP Spectre x360 running Windows 10 and the Raspberry Pi Camera Module on the Raspberry Pi 3 running Raspbian Stretch.
+OpenCV project: motion detection software using the built-in webcam. So far, the software has been tested on the HP Spectre x360 running Windows 10 and the Raspberry Pi Camera Module on the Raspberry Pi 3 running Raspbian Stretch.
 
 # Requirements
 - Python 3.0 or higher
@@ -64,6 +64,12 @@ If started successfully a window like the one below will appear displaying a liv
 03-06-2019 21:21:08, 6.7135494260
 ```
 - <kbd>Q</kbd>: Quits the program
+
+# Limitations/Bugs
+- If a moving object stops long enough in the frame, the background subtractor will no longer detect the once moving object until it moves again
+- If the software is run in a Python IDE, the program may still consume CPU power once closed
+- Sudden changes in the scene not due to movement (i.e. changing lighting conditions in overcast weather) the software falsely detects motion
+- High CPU consumption
 
 # Author
 Jack Myers
