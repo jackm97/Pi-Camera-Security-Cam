@@ -74,4 +74,8 @@ If started successfully a window like the one below will appear displaying a liv
 # Author
 Jack Myers
 
+# References
+- [pyimagesearch](https://www.pyimagesearch.com)
+- [OpenCV Tutorials](https://docs.opencv.org/4.0.0/d6/d00/tutorial_py_root.html)
+
 
